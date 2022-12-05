@@ -1,0 +1,6 @@
+export ALICE_NODE=127.0.0.1:10001
+export ALICE_CERT=~/.polar/networks/1/volumes/lnd/alice/tls.cert
+export ALICE_MACAROON=~/.polar/networks/1/volumes/lnd/alice/data/chain/bitcoin/regtest/admin.macaroon
+export BOB_NODE=127.0.0.1:10002
+export BOB_CERT=~/.polar/networks/1/volumes/lnd/bob/tls.cert
+export BOB_MACAROON=~/.polar/networks/1/volumes/lnd/bob/data/chain/bitcoin/regtest/admin.macaroon
