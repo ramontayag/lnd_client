@@ -1,10 +1,10 @@
 defmodule LndClient.Calls.GetForwardingHistory do
   alias LndClient.Convert
 
-  def handle(params, connection, macaroon) do
+  def handle(params, channel, macaroon) do
     params
     |> convert_params
-    |> call_node(connection, macaroon)
+    |> call_node(channel, macaroon)
     |> convert_result
   end
 
@@ -22,9 +22,9 @@ defmodule LndClient.Calls.GetForwardingHistory do
     }
   end
 
-  defp call_node(params, connection, macaroon) do
+  defp call_node(params, channel, macaroon) do
     Lnrpc.Lightning.Stub.forwarding_history(
-      connection,
+      channel,
       Lnrpc.ForwardingHistoryRequest.new(params),
       metadata: %{macaroon: macaroon}
     )

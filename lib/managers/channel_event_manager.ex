@@ -24,7 +24,7 @@ defmodule LndClient.Managers.ChannelEventManager do
 
     response =
       Lnrpc.Lightning.Stub.subscribe_channel_events(
-        state.connection,
+        state.channel,
         Lnrpc.ChannelEventSubscription.new(),
         metadata: %{macaroon: state.macaroon}
       )
