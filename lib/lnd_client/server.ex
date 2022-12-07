@@ -186,14 +186,7 @@ defmodule LndClient.Server do
   end
 
   def handle_call(:get_info, _from, state) do
-    result =
-      Lnrpc.Lightning.Stub.get_info(
-        state.channel,
-        Lnrpc.GetInfoRequest.new(),
-        metadata: %{macaroon: state.macaroon}
-      )
-
-    {:reply, result, state}
+    {:reply, LndClient.InfoHandler.get(state.channel, state.macaroon), state}
   end
 
   def handle_call({:decode_payment_request, payment_request}, _from, state) do

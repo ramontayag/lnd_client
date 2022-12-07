@@ -45,6 +45,7 @@ defmodule LndClient.MixProject do
     [
       {:dialyxir, "~> 1.2", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.28", only: :dev, runtime: false},
+      {:grpc_mock, "~> 0.3", only: :test},
       {:grpc, "~> 0.5.0"},
       {:protobuf, "~> 0.11.0"}
     ]
