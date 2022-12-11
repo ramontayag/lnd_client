@@ -47,7 +47,7 @@ defmodule LndClient.Connectivity do
   end
 
   defp append_verify_settings(list) do
-    list |> append_if(Mix.env() == :test, verify: :verify_none)
+    list |> append_if(Application.get_env(:lnd_client, :env) == :test, verify: :verify_none)
   end
 
   defp append_if(list, condition, item) do
