@@ -1,6 +1,9 @@
 defmodule LndClient.Connectivity do
   alias LndClient.ConnConfig
 
+  @callback connect(ConnConfig.t()) ::
+              {:ok, %{channel: GRPC.Channel.t(), macaroon: String.t()}} | {:error, String.t()}
+
   def connect(%ConnConfig{} = conn_config) do
     creds = get_creds(conn_config.cert_path)
 
@@ -12,6 +15,7 @@ defmodule LndClient.Connectivity do
     |> manage_new_channel(conn_config.macaroon_path)
   end
 
+  @callback disconnect(GRPC.Channel.t()) :: {:ok, GRPC.Channel.t()} | {:error, any()}
   def disconnect(channel) do
     GRPC.Stub.disconnect(channel)
   end

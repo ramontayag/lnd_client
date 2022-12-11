@@ -3,10 +3,6 @@ defmodule LndClient.Server do
 
   require Logger
 
-  alias LndClient.{
-    Connectivity
-  }
-
   alias LndClient.Models.{
     OpenChannelRequest,
     ListInvoiceRequest,
@@ -91,10 +87,10 @@ defmodule LndClient.Server do
 
   def handle_call({:add_invoice, %Invoice{} = invoice}, _from, state) do
     result =
-      Lnrpc.Lightning.Stub.add_invoice(
-        state.channel,
+      lightning_service_handler().add_invoice(
         invoice,
-        metadata: %{macaroon: state.macaroon}
+        state.channel,
+        state.macaroon
       )
 
     {:reply, result, state}
@@ -102,10 +98,10 @@ defmodule LndClient.Server do
 
   def handle_call({:send_payment_sync, %SendRequest{} = send_request}, _from, state) do
     result =
-      Lnrpc.Lightning.Stub.send_payment_sync(
-        state.channel,
+      lightning_service_handler().send_payment_sync(
         send_request,
-        metadata: %{macaroon: state.macaroon}
+        state.channel,
+        state.macaroon
       )
 
     {:reply, result, state}
@@ -186,7 +182,11 @@ defmodule LndClient.Server do
   end
 
   def handle_call(:get_info, _from, state) do
-    {:reply, LndClient.InfoHandler.get(state.channel, state.macaroon), state}
+    {
+      :reply,
+      lightning_service_handler().get_info(state.channel, state.macaroon),
+      state
+    }
   end
 
   def handle_call({:decode_payment_request, payment_request}, _from, state) do
@@ -426,13 +426,13 @@ defmodule LndClient.Server do
 
   # perform cleanup
   def terminate(_reason, %{channel: channel}) do
-    Connectivity.disconnect(channel)
+    connectivity().disconnect(channel)
   end
 
   defp connect_to_lnd(state) do
     conn_config = Map.get(state, :conn_config)
 
-    case Connectivity.connect(conn_config) do
+    case connectivity().connect(conn_config) do
       {:ok, %{channel: channel, macaroon: macaroon}} ->
         new_state =
           state
@@ -444,5 +444,17 @@ defmodule LndClient.Server do
       {:error, error} ->
         {:error, "unable to connect to LND: #{error}"}
     end
+  end
+
+  defp lightning_service_handler do
+    Application.get_env(
+      :lnd_client,
+      :lightning_service_handler,
+      LndClient.LightningServiceHandler
+    )
+  end
+
+  defp connectivity do
+    Application.get_env(:lnd_client, :connectivity, LndClient.Connectivity)
   end
 end
