@@ -9,35 +9,42 @@ defmodule LndClientTest do
   setup :set_mox_from_context
   setup :verify_on_exit!
 
-  setup do
-    LndClient.MockConnectivity
-    |> expect(
-      :connect,
-      fn %ConnConfig{node_uri: "node_uri", cert_path: "cert_path", macaroon_path: "macaroon_path"} ->
-        {:ok,
-         %{
-           conn_config: %ConnConfig{
+  setup context do
+    if context[:start_genserver] do
+      LndClient.MockConnectivity
+      |> expect(
+        :connect,
+        fn %ConnConfig{
              node_uri: "node_uri",
              cert_path: "cert_path",
              macaroon_path: "macaroon_path"
-           },
-           channel: %GRPC.Channel{},
-           macaroon: "fakedmac"
-         }}
-      end
-    )
+           } ->
+          {:ok,
+           %{
+             conn_config: %ConnConfig{
+               node_uri: "node_uri",
+               cert_path: "cert_path",
+               macaroon_path: "macaroon_path"
+             },
+             channel: %GRPC.Channel{},
+             macaroon: "fakedmac"
+           }}
+        end
+      )
 
-    conn_config = %ConnConfig{
-      node_uri: "node_uri",
-      cert_path: "cert_path",
-      macaroon_path: "macaroon_path"
-    }
+      conn_config = %ConnConfig{
+        node_uri: "node_uri",
+        cert_path: "cert_path",
+        macaroon_path: "macaroon_path"
+      }
 
-    LndClient.start_link(conn_config)
+      LndClient.start_link(conn_config)
+    end
 
     :ok
   end
 
+  @tag :start_genserver
   test "get_info returns the info of the given server" do
     LndClient.MockLightningServiceHandler
     |> expect(
@@ -64,6 +71,7 @@ defmodule LndClientTest do
     assert LndClient.child_spec(%{conn_config: conn_config, name: :alice_lnd}) == expected_result
   end
 
+  @tag :start_genserver
   test "add_invoice creates an invoice" do
     LndClient.MockLightningServiceHandler
     |> expect(
@@ -83,6 +91,7 @@ defmodule LndClientTest do
     assert add_invoice_response.payment_request == "pr"
   end
 
+  @tag :start_genserver
   test "send_payment_sync sends a payment" do
     LndClient.MockLightningServiceHandler
     |> expect(
